@@ -3,3 +3,8 @@ mat-accordion{
     margin-top: 20px;
     display: block;
 }
+
+mat-spinner{
+
+    margin:auto
+}

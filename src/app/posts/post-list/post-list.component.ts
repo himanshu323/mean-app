@@ -1,8 +1,9 @@
-import { Component } from "@angular/core";
+import { Component, OnDestroy } from "@angular/core";
 import { Input } from "@angular/core";
 import { Post } from "src/app/posts/posts.model";
 import { PostService } from "src/app/posts/post.service";
 import { OnInit } from "@angular/core";
+import {Subscription} from "rxjs"
 
 
 
@@ -12,12 +13,21 @@ import { OnInit } from "@angular/core";
     templateUrl : './post-list.component.html',
     styleUrls : ['./post-list.component.css']
 })
-export class PostsListComponent implements OnInit{
-    ngOnInit(): void {
-        this.posts=this.postService.getAllPosts();
+export class PostsListComponent implements OnInit,OnDestroy{
 
-        this.postService.getPostListener().subscribe((posts)=>{
+    isLoading=false;
+    ngOnDestroy(): void {
+        this.postSubscription.unsubscribe();
+    }
+    postSubscription:Subscription;
+    ngOnInit(): void {
+        this.isLoading=true;
+      this.postService.getAllPosts();
+
+     this.postSubscription=   this.postService.getPostListener().subscribe((posts)=>{
+         this.isLoading=false;
             this.posts=posts;
+
         })
     }
 // posts=[
@@ -37,5 +47,10 @@ export class PostsListComponent implements OnInit{
 
    constructor(private postService:PostService){
 
+   }
+
+   onDelete(postId:string){
+
+    this.postService.deletePost(postId);
    }
 }
