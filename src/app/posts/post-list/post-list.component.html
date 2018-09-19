@@ -24,5 +24,17 @@
 
         </mat-expansion-panel>
 
+        <!-- <mat-paginator [length]="10"
+              [pageSize]="2"
+              [pageSizeOptions]="[2,3,5,10,25,100]" (page)="onChange($event)" *ngIf="posts.length > 0" >
+                       
+        </mat-paginator> -->
+
+        <mat-paginator [length]="length" [pageSize]="postsPerPage" [pageSizeOptions]="pageSizeOptions" (page)="onChangedPage($event)"
+  *ngIf="posts.length > 0"></mat-paginator>
+
+
+  
+
 
 

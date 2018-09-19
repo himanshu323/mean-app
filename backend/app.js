@@ -7,7 +7,9 @@ const path=require("path");
 
 const app=express();
 //mongodb://<dbuser>:<dbpassword>@ds261332.mlab.com:61332/meandb323
-mongoose.connect("mongodb://localhost:27017/meandb");
+//mongoose.connect("mongodb://localhost:27017/meandb");
+mongoose.connect("mongodb://him323:lpqaqa12@ds261332.mlab.com:61332/meandb323");
+
 
 app.use(bodyParser.json())
 app.use("/images", express.static(path.join("backend/images")));

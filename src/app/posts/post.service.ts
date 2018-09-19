@@ -13,7 +13,7 @@ constructor(private http:HttpClient,private router:Router){
 
 }
 
-  private  postsUpdated=new Subject<Post[]>();
+  private  postsUpdated=new Subject<{posts:Post[],postsCount:number}>();
 
   postSubscription:Subscription;
 
@@ -24,24 +24,26 @@ constructor(private http:HttpClient,private router:Router){
 private  posts:Post[]=[];
 
 
-getAllPosts(){
-    
-    this.http.get<{message:string,posts:any}>("http://localhost:3001/api/posts").
+getAllPosts(pageSize,currentPage){
+    let queryParam=`?pageSize=${pageSize}&currentPage=${currentPage}`;
+    this.http.get<{message:string,posts:any,maxPages:number}>("http://localhost:3001/api/posts" +queryParam).
     pipe(map(postData=>{
 
 
-       return postData.posts.map(post=>{
+       return{posts: postData.posts.map(post=>{
             return{
             title:post.title,
             content:post.content,
             id:post._id,
             imagePath:post.imagePath
-        }})
+        }}),
+        postsCount:postData.maxPages}
     }))
 .
     subscribe((data)=>{
-       this.posts= data;
-       this.postsUpdated.next([...this.posts]);
+        console.log(data);
+       this.posts= data.posts;
+       this.postsUpdated.next({posts:[...this.posts],postsCount:data.postsCount});
     })
 
 
@@ -72,18 +74,18 @@ updatePost(postId,title,content,image){
 
     this.http.put("http://localhost:3001/api/posts/"+postId,postData).subscribe((data)=>{
 
-   let OldIndex= this.posts.findIndex(post=>post.id===postId);
-        const post: Post = {
-            id: postId,
-            title: title,
-            content: content,
-            imagePath: ""
-        };
-   this.posts[OldIndex]=post;
+//    let OldIndex= this.posts.findIndex(post=>post.id===postId);
+//         const post: Post = {
+//             id: postId,
+//             title: title,
+//             content: content,
+//             imagePath: ""
+//         };
+//    this.posts[OldIndex]=post;
 
-   console.log(data)
-;
-   this.postsUpdated.next([...this.posts]);
+//    console.log(data)
+// ;
+//    this.postsUpdated.next([...this.posts]);
 
    this.router.navigate(["/"])
     })
@@ -102,9 +104,9 @@ addPost(post:Post,image){
     postData.append('content',post.content);
     postData.append('image',image,post.title)
     this.http.post<{message:string,postId:string}>("http://localhost:3001/api/posts",postData).subscribe((data)=>{
-        post.id=data.postId;
-        this.posts.push(post);
-        this.postsUpdated.next([...this.posts]);
+        // post.id=data.postId;
+        // this.posts.push(post);
+        // this.postsUpdated.next([...this.posts]);
         this.router.navigate(["/"])
     })
    
@@ -112,14 +114,7 @@ addPost(post:Post,image){
 
 deletePost(postId:string){
 
-    this.http.delete("http://localhost:3001/api/posts/"+postId).subscribe((data)=>{
-
-       this.posts=this.posts.filter(post=>post.id !==postId)
-
-       this.postsUpdated.next([...this.posts]);
-
-
-    })
+    return this.http.delete("http://localhost:3001/api/posts/"+postId);
 
 }
 

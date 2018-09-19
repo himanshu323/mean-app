@@ -31,15 +31,39 @@ const storage = multer.diskStorage({
 
 router.get("",(req,resp)=>{
 
-    Post.find().then(documents=>{
+    let pageSize=+req.query.pageSize;
 
+    let currentPage=+req.query.currentPage;
+
+    console.log(pageSize,currentPage,"*****");
+    postsQuery=Post.find();
+
+    if(pageSize && currentPage){
+
+        postsQuery.skip(pageSize*(currentPage-1)).limit(pageSize);
+    }
+
+    let  fetchedPosts;
+    postsQuery.then(documents=>{
+
+        fetchedPosts=documents;
+       return Post.count();
         console.log(documents);
 
+        
+
+    }).then((count)=>{
+
+        console.log({
+            message:"Posts fetched successfully",
+            posts:fetchedPosts,
+            maxPages:count
+        })
         resp.status(200).json({
             message:"Posts fetched successfully",
-            posts:documents
+            posts:fetchedPosts,
+            maxPages:count
         })
-
     })
     
    // next();
