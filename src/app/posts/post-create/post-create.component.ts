@@ -6,6 +6,7 @@ import { NgForm } from "@angular/forms/src/directives/ng_form";
 import { PostService } from "src/app/posts/post.service";
 import { ActivatedRoute } from "@angular/router";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
+import { mimetype } from "src/app/posts/post-create/mime-type.validator";
 
 
 
@@ -39,7 +40,7 @@ export class PostCreateComponent implements OnInit{
             }),
 
             'image':new FormControl(null,{
-                validators:[Validators.required]
+                validators:[Validators.required],asyncValidators:[mimetype]
             })
         })
        
@@ -57,11 +58,14 @@ export class PostCreateComponent implements OnInit{
                     this.post={
                         id:post._id,
                         title:post.title,
-                        content:post.content
+                        content:post.content,
+                        imagePath:post.imagePath
+                     
                     }
                     this.form.setValue({
                         'title':this.post.title,
-                        'content':this.post.content
+                        'content':this.post.content,
+                        'image': this.post.imagePath
                     })
                 });
 
@@ -111,10 +115,12 @@ export class PostCreateComponent implements OnInit{
              let newPost:Post={
                  title:this.form.value.title,
                  content:this.form.value.content,
-                 id:null
+                 id:null,
+                 imagePath:this.form.value.image
+              
              }
      
-             this.postService.addPost(newPost);
+             this.postService.addPost(newPost,this.form.value.image);
      
         }
         else{
@@ -123,10 +129,12 @@ export class PostCreateComponent implements OnInit{
             let newPost:Post={
                 title:this.form.value.title,
                 content:this.form.value.content,
-                id:this.postId
+                id:this.postId,
+                imagePath: this.form.value.image
+                
             }
     
-            this.postService.updatePost(newPost.id,newPost.title,newPost.content);
+            this.postService.updatePost(newPost.id,newPost.title,newPost.content,newPost.imagePath);
 
         }
        

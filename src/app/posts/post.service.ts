@@ -34,7 +34,8 @@ getAllPosts(){
             return{
             title:post.title,
             content:post.content,
-            id:post._id
+            id:post._id,
+            imagePath:post.imagePath
         }})
     }))
 .
@@ -48,22 +49,37 @@ getAllPosts(){
 
 getPost(postId:string){
 
-   return this.http.get<{_id:string,title:string,content:string}>("http://localhost:3001/api/posts/"+postId);
+   return this.http.get<{_id:string,title:string,content:string,imagePath:string}>("http://localhost:3001/api/posts/"+postId);
 }
 
-updatePost(postId,title,content){
+updatePost(postId,title,content,image){
 
-    let updatedPost={
-        id:postId,
-    title:title,
-    content:content
+    let postData: Post | FormData;
+    if (typeof image === "object") {
+        postData = new FormData();
+        postData.append("id", postId);
+        postData.append("title", title);
+        postData.append("content", content);
+        postData.append("image", image, title);
+    } else {
+        postData = {
+            id: postId,
+            title: title,
+            content: content,
+            imagePath: image
+        };
     }
 
-    this.http.put("http://localhost:3001/api/posts/"+postId,updatedPost).subscribe((data)=>{
+    this.http.put("http://localhost:3001/api/posts/"+postId,postData).subscribe((data)=>{
 
    let OldIndex= this.posts.findIndex(post=>post.id===postId);
-
-   this.posts[OldIndex]=updatedPost;
+        const post: Post = {
+            id: postId,
+            title: title,
+            content: content,
+            imagePath: ""
+        };
+   this.posts[OldIndex]=post;
 
    console.log(data)
 ;
@@ -79,9 +95,13 @@ getPostListener(){
 
 
 
-addPost(post:Post){
+addPost(post:Post,image){
 
-    this.http.post<{message:string,postId:string}>("http://localhost:3001/api/posts",post).subscribe((data)=>{
+    const postData=new FormData();
+    postData.append('title',post.title);
+    postData.append('content',post.content);
+    postData.append('image',image,post.title)
+    this.http.post<{message:string,postId:string}>("http://localhost:3001/api/posts",postData).subscribe((data)=>{
         post.id=data.postId;
         this.posts.push(post);
         this.postsUpdated.next([...this.posts]);
