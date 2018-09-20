@@ -6,13 +6,14 @@ mat-toolbar{
 ul{
     list-style: none;
     text-decoration: none;
+    display: flex
     
 }
 
 a{
     color:white;
 
-    text-decoration: none
+    text-decoration: none;
 }
 
 .spacer {
