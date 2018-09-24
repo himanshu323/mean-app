@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 
 import { Output,EventEmitter } from "@angular/core";
 import { Post } from "src/app/posts/posts.model";
@@ -7,6 +7,9 @@ import { PostService } from "src/app/posts/post.service";
 import { ActivatedRoute } from "@angular/router";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { mimetype } from "src/app/posts/post-create/mime-type.validator";
+import { Subscription } from "rxjs";
+import { AuthService } from "../../auth/auth.service";
+import { subscribeOn } from "rxjs/operators";
 
 
 
@@ -17,8 +20,12 @@ import { mimetype } from "src/app/posts/post-create/mime-type.validator";
     templateUrl:"./post-create.component.html",
     styleUrls : ['./post-create.component.css']
 })
-export class PostCreateComponent implements OnInit{
+export class PostCreateComponent implements OnInit,OnDestroy{
 
+    ngOnDestroy(): void {
+        this.authSub.unsubscribe();
+
+    }
   mode="create"
   postId:string;
   post:Post
@@ -26,9 +33,15 @@ export class PostCreateComponent implements OnInit{
     imagePreview:string;
   form:FormGroup;
 
+  authSub:Subscription;
+
 
     ngOnInit(): void {
 
+
+        this.authSub=this.authService.getAuthStatusListener().subscribe(e=>{
+            this.isLoading=false;
+        })
         this.form=new FormGroup({
 
             'title': new FormControl(null,{
@@ -59,7 +72,8 @@ export class PostCreateComponent implements OnInit{
                         id:post._id,
                         title:post.title,
                         content:post.content,
-                        imagePath:post.imagePath
+                        imagePath:post.imagePath,
+                        creator:post.creator
                      
                     }
                     this.form.setValue({
@@ -78,7 +92,7 @@ export class PostCreateComponent implements OnInit{
 
         })
     }
-    constructor(private postService:PostService,private route:ActivatedRoute){
+    constructor(private postService:PostService,private route:ActivatedRoute,private authService:AuthService){
 
     }
 
@@ -116,7 +130,8 @@ export class PostCreateComponent implements OnInit{
                  title:this.form.value.title,
                  content:this.form.value.content,
                  id:null,
-                 imagePath:this.form.value.image
+                 imagePath:this.form.value.image,
+                 creator:null
               
              }
      
@@ -130,7 +145,8 @@ export class PostCreateComponent implements OnInit{
                 title:this.form.value.title,
                 content:this.form.value.content,
                 id:this.postId,
-                imagePath: this.form.value.image
+                imagePath: this.form.value.image,
+                creator:null
                 
             }
     

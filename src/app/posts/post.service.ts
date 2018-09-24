@@ -6,8 +6,12 @@ import { HttpClient } from "@angular/common/http";
 import {map }from  'rxjs/operators'
 import { Subscription } from "rxjs";
 import { Router } from "@angular/router";
+import { environment } from "../../environments/environment";
 @Injectable({ providedIn: 'root' })
 export class PostService{
+
+    BACKEND_POSTS_URL=environment.apiUrl+"posts/"
+    
 
 constructor(private http:HttpClient,private router:Router){
 
@@ -26,7 +30,7 @@ private  posts:Post[]=[];
 
 getAllPosts(pageSize,currentPage){
     let queryParam=`?pageSize=${pageSize}&currentPage=${currentPage}`;
-    this.http.get<{message:string,posts:any,maxPages:number}>("http://localhost:3001/api/posts" +queryParam).
+    this.http.get<{message:string,posts:any,maxPages:number}>(this.BACKEND_POSTS_URL +queryParam).
     pipe(map(postData=>{
 
 
@@ -35,7 +39,8 @@ getAllPosts(pageSize,currentPage){
             title:post.title,
             content:post.content,
             id:post._id,
-            imagePath:post.imagePath
+            imagePath:post.imagePath,
+            creator:post.creator
         }}),
         postsCount:postData.maxPages}
     }))
@@ -51,7 +56,7 @@ getAllPosts(pageSize,currentPage){
 
 getPost(postId:string){
 
-   return this.http.get<{_id:string,title:string,content:string,imagePath:string}>("http://localhost:3001/api/posts/"+postId);
+   return this.http.get<{_id:string,title:string,content:string,imagePath:string,creator:string}>(this.BACKEND_POSTS_URL+postId);
 }
 
 updatePost(postId,title,content,image){
@@ -68,11 +73,12 @@ updatePost(postId,title,content,image){
             id: postId,
             title: title,
             content: content,
-            imagePath: image
+            imagePath: image,
+            creator:null
         };
     }
 
-    this.http.put("http://localhost:3001/api/posts/"+postId,postData).subscribe((data)=>{
+    this.http.put(this.BACKEND_POSTS_URL+postId,postData).subscribe((data)=>{
 
 //    let OldIndex= this.posts.findIndex(post=>post.id===postId);
 //         const post: Post = {
@@ -103,10 +109,12 @@ addPost(post:Post,image){
     postData.append('title',post.title);
     postData.append('content',post.content);
     postData.append('image',image,post.title)
-    this.http.post<{message:string,postId:string}>("http://localhost:3001/api/posts",postData).subscribe((data)=>{
+    this.http.post<{message:string,postId:string}>(this.BACKEND_POSTS_URL,postData).subscribe((data)=>{
         // post.id=data.postId;
         // this.posts.push(post);
         // this.postsUpdated.next([...this.posts]);
+
+        console.log(data);
         this.router.navigate(["/"])
     })
    
@@ -114,7 +122,7 @@ addPost(post:Post,image){
 
 deletePost(postId:string){
 
-    return this.http.delete("http://localhost:3001/api/posts/"+postId);
+    return this.http.delete(this.BACKEND_POSTS_URL+postId);
 
 }
 
